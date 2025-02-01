@@ -1,0 +1,7 @@
+python >= 3.8
+torch >= 1.8
+opencv-python >= 4.10.0
+numpy
+ultralytics
+
+pip install torch torchvision torchaudio opencv-python>=4.10.0 numpy ultralytics
