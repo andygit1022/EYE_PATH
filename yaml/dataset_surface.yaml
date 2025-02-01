@@ -1,0 +1,8 @@
+train: /mnt/dataset_surface/images/train
+val: /mnt/dataset_surface/images/val
+
+# number of classes
+nc: 6
+
+# class names
+names: ['sidewalk', 'alley', 'roadway', 'braille_guide_blocks', 'caution_zone', 'bike_lane']

@@ -1,52 +1,49 @@
-# src/data/data_overview.py
-
-"""
-데이터 전체 정보 파악:
-- CSV 파일에서 읽은 전체 라인 수
-- 각 Bbox_xxxx 디렉토리가 몇 개 있는지
-- 라벨별 개수 등을 출력
-"""
-
-import csv
 import os
-from collections import defaultdict
+import xml.etree.ElementTree as ET
+import csv
 
-def overview_data(csv_path: str):
-    """
-    CSV 파일 경로를 받아서:
-    1) 전체 행(row) 개수
-    2) Bbox_xxxx 디렉토리(unique) 개수
-    3) 라벨(label)별 개수
-    등을 출력/반환
-    """
-    total_rows = 0
-    bbox_dir_set = set()
-    label_count = defaultdict(int)
+# 기준 디렉토리 설정
+base_dir = "data/15.인도보행영상/바운딩박스"
+output_csv = "output.csv"
 
-    with open(csv_path, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            # 예시: 278, Bbox_0345/MP_SEL_067785.jpg, car, 1, 208.0, ...
-            total_rows += 1
-            image_path = row[1]  # ex) "Bbox_0345/MP_SEL_067785.jpg"
-            label_name = row[2]
+# CSV 파일 생성 및 헤더 작성
+with open(output_csv, mode='w', newline='', encoding='utf-8') as csv_file:
+    writer = csv.writer(csv_file)
+    # CSV 헤더 작성
+    writer.writerow(["image_id", "image_path", "label", "occluded", "xtl", "ytl", "xbr", "ybr", "z_order"])
 
-            # Bbox_xxxx 추출
-            # ex) image_path.split('/')[0] => "Bbox_0345"
-            bbox_dir_set.add(image_path.split('/')[0])
+    # 모든 Bbox 디렉토리 탐색
+    for bbox_dir in os.listdir(base_dir):
+        bbox_path = os.path.join(base_dir, bbox_dir)
 
-            # 라벨 카운팅
-            label_count[label_name] += 1
+        # 디렉토리가 맞는지 확인
+        if os.path.isdir(bbox_path) and bbox_dir.startswith("Bbox_"):
+            # XML 파일 찾기
+            for file in os.listdir(bbox_path):
+                if file.endswith(".xml"):
+                    xml_path = os.path.join(bbox_path, file)
 
-    print(f"Total rows in CSV: {total_rows}")
-    print(f"Number of unique Bbox dirs: {len(bbox_dir_set)}")
-    print("Label distribution:")
-    for lbl, cnt in label_count.items():
-        print(f"  {lbl}: {cnt}")
+                    # XML 파일 파싱
+                    tree = ET.parse(xml_path)
+                    root = tree.getroot()
 
-    # 필요하다면 리턴도 가능
-    return {
-        "total_rows": total_rows,
-        "num_bbox_dirs": len(bbox_dir_set),
-        "label_count": dict(label_count)
-    }
+                    # XML의 이미지 데이터 읽기
+                    for image in root.findall("image"):
+                        image_id = image.get("id")
+                        image_name = image.get("name")
+                        image_path = os.path.join(bbox_dir, image_name)
+
+                        # 각 box 태그에서 데이터 추출
+                        for box in image.findall("box"):
+                            label = box.get("label")
+                            occluded = box.get("occluded")
+                            xtl = box.get("xtl")
+                            ytl = box.get("ytl")
+                            xbr = box.get("xbr")
+                            ybr = box.get("ybr")
+                            z_order = box.get("z_order")
+
+                            # CSV 파일에 데이터 작성
+                            writer.writerow([image_id, image_path, label, occluded, xtl, ytl, xbr, ybr, z_order])
+
+print(f"CSV 파일이 생성되었습니다: {output_csv}")

@@ -1,0 +1,8 @@
+train: /mnt/dataset/images/train
+val: /mnt/dataset/images/val
+
+# number of classes
+nc: 29
+
+# class names
+names: ['bicycle', 'car', 'person', 'motorcycle', 'pole', 'barricade', 'tree_trunk', 'chair', 'table', 'truck', 'potted_plant', 'movable_signage', 'bollard', 'traffic_sign', 'power_controller', 'bus', 'fire_hydrant', 'bench', 'kiosk', 'traffic_light', 'traffic_light_controller', 'stop', 'carrier', 'scooter', 'wheelchair', 'stroller', 'dog', 'cat', 'parking_meter']
